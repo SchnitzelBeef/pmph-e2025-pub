@@ -1,3 +1,51 @@
+let exscan f ne xs =
+  map2 (\i x -> if i == 0 then ne else x)
+       (indices xs)
+       (rotate (-1) (scan f ne xs))
+
+-- From spMVmult-flat.fut (weeklies-1):
+let mkFlagArray 't [m] 
+            (aoa_shp: [m]i64) (zero: t)   --aoa_shp=[0,3,1,0,4,2,0]
+            (aoa_val: [m]t  ) : []t   =   --aoa_val=[1,1,1,1,1,1,1]
+  let shp_rot = map (\i->if i==0 then 0   --shp_rot=[0,0,3,1,0,4,2]
+                         else aoa_shp[i-1]
+                    ) (iota m)
+  let shp_scn = scan (+) 0 shp_rot       --shp_scn=[0,0,3,4,4,8,10]
+  let aoa_len = if m == 0 then 0         --aoa_len= 10
+                else shp_scn[m-1]+aoa_shp[m-1]
+  let shp_ind = map2 (\shp ind ->        --shp_ind= 
+                       if shp==0 then -1 --  [-1,0,3,-1,4,8,-1]
+                       else ind          --scatter
+                     ) aoa_shp shp_scn   --   [0,0,0,0,0,0,0,0,0,0]
+  in scatter (replicate aoa_len zero)    --   [-1,0,3,-1,4,8,-1]
+             shp_ind aoa_val             --   [1,1,1,1,1,1,1]
+                                     -- res = [1,0,0,1,1,0,0,0,1,0] 
+
+-- From spMVmult-flat.fut (weeklies-1):
+let sgmScan [n] 't
+            (op: t -> t -> t)
+            (ne: t)
+            (flags: [n]i64)
+            (vals: [n]t)
+            : [n]t =
+  scan (\(f1, v1) (f2, v2) -> (if f1 == 0 || f2 == 0 then 0 else 1, if f2 != 0 then v2 else op v1 v2))
+       (0, ne)
+       (zip flags vals)
+  |> unzip
+  |> (.1)
+
+let exSgmScan [n] 't
+            (op: t -> t -> t)
+            (ne: t)
+            (flags: [n]i64)
+            (vals: [n]t)
+            : [n]t =
+  exscan (\(f1, v1) (f2, v2) -> (if f1 == 0 || f2 == 0 then 0 else 1, if f2 != 0 then v2 else op v1 v2))
+       (0, ne)
+       (zip flags vals)
+  |> unzip
+  |> (.1)
+
 -- Primes: Flat-Parallel Version
 -- ==
 -- compiled input { 30i64 } output { [2i64, 3i64, 5i64, 7i64, 11i64, 13i64, 17i64, 19i64, 23i64, 29i64] }
@@ -35,8 +83,23 @@ let primesFlat (n: i64) : []i64 =
       --  where `p \in sq_primes`.
       -- Also note that `not_primes` has flat length equal to `flat_size`
       --  and the shape of `composite` is `mult_lens`. 
-      
-      let not_primes = replicate flat_size 0
+
+      let fmm1  = mult_lens
+      let inds  = exscan (+) 0 fmm1
+      let flag  = mkFlagArray fmm1 0 inds :> [flat_size]i64
+
+      -- Iota nested in map
+      let fiot  = exSgmScan (+) 0 flag (replicate flat_size 1)
+
+      -- Map nested in map
+      let ftwom = map (+2) fiot
+
+      -- Replicate nested in map
+      let vals  = scatter (replicate flat_size 0) inds sq_primes
+      let frp   = sgmScan (+) 0 flag vals
+
+      -- Map nested in map
+      let not_primes = map (\(j, p) -> j * p) (zip ftwom frp)
 
       -- If not_primes is correctly computed, then the remaining
       -- code is correct and will do the job of computing the prime
