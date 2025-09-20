@@ -1,3 +1,9 @@
+-- Primes: Flat-Parallel Version
+-- ==
+-- compiled input { 30i64 } output { [2i64, 3i64, 5i64, 7i64, 11i64, 13i64, 17i64, 19i64, 23i64, 29i64] }
+-- compiled input { 10000000i64 }
+-- output @ ref10000000.out
+
 let exscan f ne xs =
   map2 (\i x -> if i == 0 then ne else x)
        (indices xs)
@@ -45,12 +51,6 @@ let exSgmScan [n] 't
        (zip flags vals)
   |> unzip
   |> (.1)
-
--- Primes: Flat-Parallel Version
--- ==
--- compiled input { 30i64 } output { [2i64, 3i64, 5i64, 7i64, 11i64, 13i64, 17i64, 19i64, 23i64, 29i64] }
--- compiled input { 10000000i64 }
--- output @ ref10000000.out
 
 let primesFlat (n: i64) : []i64 =
   let sq_primes = [2i64, 3i64, 5i64, 7i64]
