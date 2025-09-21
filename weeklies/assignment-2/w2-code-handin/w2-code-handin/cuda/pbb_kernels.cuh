@@ -182,10 +182,10 @@ scanIncWarp( volatile typename OP::RedElTp* ptr, const uint32_t idx ) {
     const uint32_t lane = idx & (WARP-1);
     
     #pragma unroll
-    for (int d = 0; d < lgWARP; d++) { /* OBS minus one */
+    for (int d = 0; d < lgWARP; d++) {
         int h = pow(2, d);
         if (lane >= h) {
-            ptr[lane] = OP::apply(ptr[lane-h], ptr[lane]);
+            ptr[idx] = OP::apply(ptr[idx-h], ptr[idx]);
         }
     }
 
