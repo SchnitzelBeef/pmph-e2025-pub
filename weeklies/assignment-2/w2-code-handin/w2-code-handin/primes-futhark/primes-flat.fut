@@ -8,6 +8,10 @@ let exscan f ne xs =
   map2 (\i x -> if i == 0 then ne else x)
        (indices xs)
        (rotate (-1) (scan f ne xs))
+  -- scan f ne (map (\i -> if i == 0 then 0 
+  --                       else xs[i-1]
+  --                       ) (iota (length xs)))
+
 
 -- From spMVmult-flat.fut (weeklies-1):
 let mkFlagArray 't [m] 
@@ -27,14 +31,14 @@ let mkFlagArray 't [m]
              shp_ind aoa_val             --   [1,1,1,1,1,1,1]
                                      -- res = [1,0,0,1,1,0,0,0,1,0] 
 
--- From spMVmult-flat.fut (weeklies-1):
+-- Modified from spMVmult-flat.fut (weeklies-1):
 let sgmScan [n] 't
             (op: t -> t -> t)
             (ne: t)
             (flags: [n]i64)
             (vals: [n]t)
             : [n]t =
-  scan (\(f1, v1) (f2, v2) -> (if f1 == 0 || f2 == 0 then 0 else 1, if f2 != 0 then v2 else op v1 v2))
+  scan (\(f1, v1) (f2, v2) -> (if f1 != 0 || f2 != 0 then 1 else 0, if f2 != 0 then v2 else op v1 v2))
        (0, ne)
        (zip flags vals)
   |> unzip
@@ -46,7 +50,7 @@ let exSgmScan [n] 't
             (flags: [n]i64)
             (vals: [n]t)
             : [n]t =
-  exscan (\(f1, v1) (f2, v2) -> (if f1 == 0 || f2 == 0 then 0 else 1, if f2 != 0 then v2 else op v1 v2))
+  exscan (\(f1, v1) (f2, v2) -> (if f1 != 0 || f2 != 0 then 1 else 0, if f2 != 0 then v2 else op v1 v2))
        (0, ne)
        (zip flags vals)
   |> unzip
@@ -86,9 +90,8 @@ let primesFlat (n: i64) : []i64 =
 
       let fmm1  = mult_lens
       let inds  = exscan (+) 0 fmm1
-      let flag  = scatter (replicate flat_size 0) inds fmm1
-      
-      -- mkFlagArray inds 0 fmm1 :> [flat_size]i64
+      -- let flag  = scatter (replicate flat_size 0) inds fmm1
+      let flag  = mkFlagArray fmm1 0 inds :> [flat_size]i64
 
       -- Iota nested in map
       let fiot  = exSgmScan (+) 0 flag (replicate flat_size 1)
