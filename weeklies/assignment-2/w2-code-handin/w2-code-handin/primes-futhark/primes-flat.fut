@@ -86,7 +86,9 @@ let primesFlat (n: i64) : []i64 =
 
       let fmm1  = mult_lens
       let inds  = exscan (+) 0 fmm1
-      let flag  = mkFlagArray fmm1 0 inds :> [flat_size]i64
+      let flag  = scatter (replicate flat_size 0) inds fmm1
+      
+      -- mkFlagArray inds 0 fmm1 :> [flat_size]i64
 
       -- Iota nested in map
       let fiot  = exSgmScan (+) 0 flag (replicate flat_size 1)
