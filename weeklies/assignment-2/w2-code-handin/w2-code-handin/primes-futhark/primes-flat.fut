@@ -4,14 +4,11 @@
 -- compiled input { 10000000i64 }
 -- output @ ref10000000.out
 
+-- From the online Futhark documentation
 let exscan f ne xs =
   map2 (\i x -> if i == 0 then ne else x)
        (indices xs)
        (rotate (-1) (scan f ne xs))
-  -- scan f ne (map (\i -> if i == 0 then 0 
-  --                       else xs[i-1]
-  --                       ) (iota (length xs)))
-
 
 -- From spMVmult-flat.fut (weeklies-1):
 let mkFlagArray 't [m] 
@@ -90,7 +87,6 @@ let primesFlat (n: i64) : []i64 =
 
       let fmm1  = mult_lens
       let inds  = exscan (+) 0 fmm1
-      -- let flag  = scatter (replicate flat_size 0) inds fmm1
       let flag  = mkFlagArray fmm1 0 inds :> [flat_size]i64
 
       -- Iota nested in map
