@@ -163,7 +163,7 @@ class Mssp {
  *   The provided dummy implementation works correctly, but it is
  *     very slow because the warp reduction is performed sequentially
  *     by the first thread of each warp, so it takes WARP-1=31 steps
- *     to complete, while the other 31 threads of the WARP are iddle.
+ *     to complete, while the other 31 threads of the WARP are idle.
  *   Your task is to write a warp-level scan implementation in which
  *     the threads in the same WARP cooperate such that the depth of
  *     this implementation is 5 steps ( WARP==32, and lg(32)=5 ).
@@ -180,13 +180,15 @@ template<class OP>
 __device__ inline typename OP::RedElTp
 scanIncWarp( volatile typename OP::RedElTp* ptr, const uint32_t idx ) {
     const uint32_t lane = idx & (WARP-1);
-
-    if(lane==0) {
-        #pragma unroll
-        for(int i=1; i<WARP; i++) {
-            ptr[idx+i] = OP::apply(ptr[idx+i-1], ptr[idx+i]);
+    
+    #pragma unroll
+    for (int d = 0; d < lgWARP; d++) { /* OBS minus one */
+        int h = pow(2, d);
+        if (lane >= h) {
+            ptr[lane] = OP::apply(ptr[lane-h], ptr[lane]);
         }
     }
+
     return OP::remVolatile(ptr[idx]);
 }
 
@@ -437,6 +439,7 @@ copyFromGlb2ShrMem( const uint32_t glb_offs
     #pragma unroll
     for(uint32_t i=0; i<CHUNK; i++) {
         uint32_t loc_ind = threadIdx.x*CHUNK + i;
+        // uint32_t loc_ind = threadIdx.x + blockIdx.x * blockDim.x 
         uint32_t glb_ind = glb_offs + loc_ind;
         T elm = ne;
         if(glb_ind < N) { elm = d_inp[glb_ind]; }
@@ -466,6 +469,7 @@ copyFromShr2GlbMem( const uint32_t glb_offs
 ) {
     #pragma unroll
     for (uint32_t i = 0; i < CHUNK; i++) {
+        // uint32_t loc_ind = threadIdx.x * CHUNK + i;
         uint32_t loc_ind = threadIdx.x * CHUNK + i;
         uint32_t glb_ind = glb_offs + loc_ind;
         if (glb_ind < N) {
