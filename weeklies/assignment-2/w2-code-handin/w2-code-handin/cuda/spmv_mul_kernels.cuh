@@ -31,10 +31,15 @@ __global__ void mkFlags(int mat_rows, int* mat_shp_sc_d, char* flags_d) {
     const unsigned int gid_x = blockIdx.x * blockDim.x + threadIdx.x;
     // Mat rows must be equal to the size of the mat_shp_sc_d array
 
-    flags_d[0] = 1;
-    if (gid_x < mat_rows - 1) {
-        const unsigned int flag = mat_shp_sc_d[gid_x];
-        flags_d[flag] = 1;
+    
+    if (gid_x < mat_rows) {
+        if (gid_x == 0) {
+            flags_d[0] = 1;
+        }
+        else {
+            const unsigned int flag = mat_shp_sc_d[gid_x-1];
+            flags_d[flag] = 1;
+        }
     }
     // Length is equal to the size of flags_d since it is based on tot_size
 }
