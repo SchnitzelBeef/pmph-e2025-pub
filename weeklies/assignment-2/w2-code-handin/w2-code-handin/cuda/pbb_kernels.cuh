@@ -179,16 +179,6 @@ class Mssp {
 template<class OP>
 __device__ inline typename OP::RedElTp
 scanIncWarp( volatile typename OP::RedElTp* ptr, const uint32_t idx ) {
-    // const uint32_t lane = idx & (WARP-1);
-
-    // if(lane==0) {
-    //     #pragma unroll
-    //     for(int i=1; i<WARP; i++) {
-    //         ptr[idx+i] = OP::apply(ptr[idx+i-1], ptr[idx+i]);
-    //     }
-    // }
-    // return OP::remVolatile(ptr[idx]);
-
     const uint32_t lane = idx & (WARP-1);
     
     #pragma unroll
@@ -448,7 +438,6 @@ copyFromGlb2ShrMem( const uint32_t glb_offs
 ) {
     #pragma unroll
     for(uint32_t i=0; i<CHUNK; i++) {
-        // uint32_t loc_ind = threadIdx.x * CHUNK + i;
         uint32_t loc_ind = threadIdx.x + i * blockDim.x;
         uint32_t glb_ind = glb_offs + loc_ind;
         T elm = ne;
@@ -479,8 +468,7 @@ copyFromShr2GlbMem( const uint32_t glb_offs
 ) {
     #pragma unroll
     for (uint32_t i = 0; i < CHUNK; i++) {
-        // uint32_t loc_ind = threadIdx.x * CHUNK + i;
-        uint32_t loc_ind = threadIdx.x + i * blockIdx.x;
+        uint32_t loc_ind = threadIdx.x + i * blockDim.x;
         uint32_t glb_ind = glb_offs + loc_ind;
         if (glb_ind < N) {
             T elm = const_cast<const T&>(shmem_red[loc_ind]);
