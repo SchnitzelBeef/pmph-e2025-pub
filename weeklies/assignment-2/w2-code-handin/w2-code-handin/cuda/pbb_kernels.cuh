@@ -238,7 +238,7 @@ scanIncBlock(volatile typename OP::RedElTp* ptr, const uint32_t idx) {
     if (warpid > 0) {
         res = OP::apply(ptr[warpid-1], res);
     }
-    
+
     // 10000000000 := 1024 >> 5
     // 00000100000 := 32
 
