@@ -30,17 +30,19 @@ __global__ void replicate0(int tot_size, char* flags_d) {
 __global__ void mkFlags(int mat_rows, int* mat_shp_sc_d, char* flags_d) {
     const unsigned int gid_x = blockIdx.x * blockDim.x + threadIdx.x;
     // Mat rows must be equal to the size of the mat_shp_sc_d array
-
+    
+    unsigned int flag = 0;
     // Exlusive scan 
-    if (gid_x > 1) {
-        const unsigned int flag = mat_shp_sc_d[gid_x-1] + mat_shp_sc_d[gid_x];
-        if (flag < mat_rows) {
-            flags_d[mat_shp_sc_d[gid_x]] = 1;
-        }  
+    if (gid_x == 1) {
+        flag = mat_shp_sc_d[0];
+    } 
+    else {
+        flag = mat_shp_sc_d[gid_x-1] + mat_shp_sc_d[gid_x];
         // mat_shp_sc_d[gid_x] = mat_shp_sc_d[gid_x-1] + mat_shp_sc_d[gid_x] ;
-    } else {
-        flags_d[0] = 1; // Maybe check for zero elements in flags_d
-    }
+    } 
+    if (flag < mat_rows) {
+        flags_d[flag] = 1;
+    }  
 
     // Length is equal to the size of flags_d since it is based on tot_size
     // if (mat_shp_sc_d[gid_x] < mat_rows) {
