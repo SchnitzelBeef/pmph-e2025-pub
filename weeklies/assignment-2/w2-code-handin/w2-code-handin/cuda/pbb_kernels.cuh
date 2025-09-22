@@ -221,9 +221,10 @@ scanIncBlock(volatile typename OP::RedElTp* ptr, const uint32_t idx) {
     //   warp size = 32, and
     //   max block size = 32^2 = 1024
     if (lane == (WARP-1)) { 
-        typename OP::RedElTp tmp = OP::remVolatile(ptr[idx]); 
-        __syncthreads();
-        ptr[warpid] = tmp;
+        ptr[warpid] = OP::remVolatile(ptr[idx]); 
+        // typename OP::RedElTp tmp = OP::remVolatile(ptr[idx]); 
+        // __syncthreads();
+        // ptr[warpid] = tmp;
     }
     __syncthreads();
 
@@ -238,8 +239,11 @@ scanIncBlock(volatile typename OP::RedElTp* ptr, const uint32_t idx) {
     // 10000000000 := 1024 >> 5
     // 00000100000 := 32
 
-    // 01111111111 := 1035 >> 5
+    // 01111111111 := 1023 >> 5
     // 00000011111 := 31
+
+    // idx 31   reads from ptr[31]   and writes to ptr[0]
+    // idx 1023 reads from ptr[1023] and writes to ptr[31]
 
     return res;
 }
