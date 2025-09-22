@@ -1,7 +1,6 @@
 #ifndef SPMV_MUL_KERNELS
 #define SPMV_MUL_KERNELS
 
-
 __global__ void replicate0(int tot_size, char* flags_d) {
     const unsigned int gid_x = blockIdx.x * blockDim.x + threadIdx.x;
     if (gid_x < tot_size) {
@@ -9,28 +8,9 @@ __global__ void replicate0(int tot_size, char* flags_d) {
     }
 }
 
-// let mkFlagArray 't [m] 
-//             (aoa_shp: [m]i64) (zero: t)   --aoa_shp=[0,3,1,0,4,2,0]
-//             (aoa_val: [m]t  ) : []t   =   --aoa_val=[1,1,1,1,1,1,1]
-//   let shp_rot = map (\i->if i==0 then 0   --shp_rot=[0,0,3,1,0,4,2]
-//                          else aoa_shp[i-1]
-//                     ) (iota m)
-//   let shp_scn = scan (+) 0 shp_rot       --shp_scn=[0,0,3,4,4,8,10]
-//   let aoa_len = if m == 0 then 0         --aoa_len= 10
-//                 else shp_scn[m-1]+aoa_shp[m-1]
-//   let shp_ind = map2 (\shp ind ->        --shp_ind= 
-//                        if shp==0 then -1 --  [-1,0,3,-1,4,8,-1]
-//                        else ind          --scatter
-//                      ) aoa_shp shp_scn   --   [0,0,0,0,0,0,0,0,0,0]
-//   in scatter (replicate aoa_len zero)    --   [-1,0,3,-1,4,8,-1]
-//              shp_ind aoa_val             --   [1,1,1,1,1,1,1]
-//                                      -- res = [1,0,0,1,1,0,0,0,1,0] 
-
-
 __global__ void mkFlags(int mat_rows, int* mat_shp_sc_d, char* flags_d) {
     const unsigned int gid_x = blockIdx.x * blockDim.x + threadIdx.x;
     // Mat rows must be equal to the size of the mat_shp_sc_d array
-
     
     if (gid_x < mat_rows) {
         if (gid_x == 0) {
@@ -62,6 +42,7 @@ __global__ void select_last_in_sgm(int mat_rows, int* mat_shp_sc_d, float* tmp_s
         const unsigned int i = mat_shp_sc_d[gid_x];
         res_vct_d[gid_x] = tmp_scan[i-1];
     }
+    // __syncthreads();
 }
 
 #endif // SPMV_MUL_KERNELS
