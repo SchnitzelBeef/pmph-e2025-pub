@@ -43,7 +43,7 @@ void multiStepHisto ( uint32_t* d_inp_inds
      ****************************************************************/
     for (uint32_t k = 0; k < num_partitions; k++) {
         uint32_t LB = CHUNK * k;
-        uint32_t UP = min((k+1)*CHUNK, H);
+        uint32_t UB = min((k+1)*CHUNK, H);
         multiStepKernel<<<grid,B>>>(d_inp_inds, d_inp_vals, d_hist, N, LB, UB);
     }
 }
