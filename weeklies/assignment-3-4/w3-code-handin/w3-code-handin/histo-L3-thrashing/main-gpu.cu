@@ -21,7 +21,7 @@ void multiStepHisto ( uint32_t* d_inp_inds
     const uint32_t CHUNK = ( LLC_FRAC * LLC ) / sizeof(float);
     uint32_t num_partitions = (H + CHUNK - 1) / CHUNK;
 
-    //printf( "Number of partitions: %f\n", ((float)H)/CHUNK );
+    printf( "Number of partitions: %f\n", ((float)H)/CHUNK );
 
     uint32_t grid = (N + B - 1) / B;
     cudaMemset(d_hist, 0, H * sizeof(float));   
@@ -29,7 +29,7 @@ void multiStepHisto ( uint32_t* d_inp_inds
     /************************
      *** Cuda Exercise 1: ***
      ************************
-     * 1. Please introduce the chunking loop of count `num_partitions`
+     * 1. Please introduce the chunking loo p of count `num_partitions`
      *    around the kernel call below, similar to parallelPlan.h.
      * 2. Then set the correct lower/upper bounds as the last two
      *    parameters of the kernel call, such as to implement the
