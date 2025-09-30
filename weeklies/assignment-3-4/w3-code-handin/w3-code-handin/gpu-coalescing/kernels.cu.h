@@ -94,7 +94,19 @@ naiveKernel(ElTp* A, ElTp* B, uint32_t num_rows, uint32_t num_cols) {
  **************************************************************/
 template<class ElTp>
 __global__ void 
-transKernel(ElTp* A_tr, ElTp* B_tr, uint32_t num_rows, uint32_t num_cols) {
+transKernel( ElTp* A_tr
+           , ElTp* B_tr
+           , uint32_t num_rows
+           , uint32_t num_cols) {
+    uint32_t gid = blockIdx.x * blockDim.x + threadIdx.x;
+    if(gid >= num_cols) return;
+
+    ElTp accum = 0;
+    for(int i = 0; i < num_rows; i++) {
+        ElTp el_a  = A[gid * num_rows + i];
+        accum = sqrt(accum) + el_a * el_a;
+        B[gid * num_rows + i] = accum;
+    }
 }
 
 ///////////////////////////////////
