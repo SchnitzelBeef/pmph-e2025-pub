@@ -103,9 +103,9 @@ transKernel( ElTp* A_tr
 
     ElTp accum = 0;
     for(int i = 0; i < num_rows; i++) {
-        ElTp el_a  = A[gid * num_rows + i];
+        ElTp el_a  = A_tr[gid * num_rows + i];
         accum = sqrt(accum) + el_a * el_a;
-        B[gid * num_rows + i] = accum;
+        B_tr[gid * num_rows + i] = accum;
     }
 }
 
