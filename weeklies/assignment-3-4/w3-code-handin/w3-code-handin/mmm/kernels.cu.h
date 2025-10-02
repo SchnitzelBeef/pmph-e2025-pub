@@ -98,16 +98,16 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
        **************************************************************/
       
       // Please implement Task 3.1.1 here
-      for (int column = iii + threadIdx.y * Ty; column < iii + threadIdx.y * (Ty + 1); column++) {
-        int row = kk + Ty * Ry * threadIdx.x;
+      for (int column = iii + threadIdx.y * Ry; column < iii + threadIdx.y * (Ry + 1); column++) {
+        int row = kk + Ry * widthA * threadIdx.x;
         ElTp tmp;  
-        if (row < heightA && column < widthA) {
+        if (column < widthA && threadIdx.y < heightA) {
           tmp = A[row + column];
         }
         else {
           tmp = 0;
         }
-        Aloc[column-iii][row-kk] = tmp;
+        Aloc[column-iii][threadIdx.y] = tmp;
       }
 
       /***************************************
@@ -139,15 +139,15 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
 
       // Please implement Task 3.1.2 here
       for (int row = kk + threadIdx.x * Tx; row < kk + threadIdx.x * (Tx + 1); row++) {
-        int column = iii + Tx * Rx * threadIdx.y;
+        int column = iii + Rx * heightA * threadIdx.y;
         ElTp tmp;  
-        if (row < widthB && column < widthA) {
+        if (threadIdx.x < widthB && column < widthA) {
           tmp = A[row + column];
         }
         else {
           tmp = 0;
         }
-        Aloc[column-iii][row-kk] = tmp;
+        Bloc[threadIdx.x][row-kk] = tmp;
       }
       __syncthreads();
 
@@ -167,9 +167,13 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
                  * This assumes of course that you have 
                  *   already solved Task 3.1.
                  ***************************************/
-                css[i][j] += 0;
-                  Aloc[threadIdx.y * Ry + i][k] *
-                  Bloc[k][threadIdx.x * Rx + j] ;
+                
+                // __shared__ ElTp Aloc[Ty*Ry][Tk];
+                // __shared__ ElTp Bloc[Tk][Tx*Rx]; 
+                
+                 css[i][j] +=
+                  Aloc[i * Ry + threadIdx.y][k] *
+                  Bloc[k][j * Rx + threadIdx.x] ;
 
                 // if( (iii + threadIdx.y*Ry + i < heightA) &&
                 //     (kk+k < widthA) &&
