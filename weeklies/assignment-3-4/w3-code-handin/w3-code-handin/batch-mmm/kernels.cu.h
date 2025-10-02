@@ -103,8 +103,8 @@ void bmmmTiledKer ( ElTp* A,      ElTp* B, char* X_tr,   ElTp* Y
     ElTp ab = A[j1 * N + q] * B[q * K + j2];
     int  i = ii + flat_thid;
     char x = (flat_thid < T && i < M) ? X_tr[q * M + i] : 0;
-    Xsh_tr[flat_thid];
-
+    Xsh_tr[flat_thid] = x;
+    
     #pragma unroll
     for (int i_r = 0; i_r < T; i_r++) {
       float v = (Xsh_tr[i_r] != 0) ? 1 : 0;
