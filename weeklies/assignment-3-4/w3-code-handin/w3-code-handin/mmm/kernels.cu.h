@@ -98,17 +98,16 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
        **************************************************************/
       
       // Please implement Task 3.1.1 here
-      for (int row = iii; row < iii + Ty * Ry; row += Ty) {
-        for (int column = kk; column < kk + Tk; column++) {
-          ElTp tmp;  
-          if (row < heightA && column < widthA) {
-            tmp = A[row + column];
-          }
-          else {
-            tmp = 0;
-          }
-          Aloc[row][column] = tmp;
+      for (int column = iii + threadIdx.y * Ty; column < iii + threadIdx.y * (Ty + 1); column++) {
+        int row = kk + Ty * Ry * threadIdx.x;
+        ElTp tmp;  
+        if (row < heightA && column < widthA) {
+          tmp = A[row + column];
         }
+        else {
+          tmp = 0;
+        }
+        Aloc[column-iii][row-kk] = tmp;
       }
 
       /***************************************
@@ -139,19 +138,17 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
        **************************************************************/
 
       // Please implement Task 3.1.2 here
-      for (int row = kk; row < kk + Tk; row++) {
-        for (int column = iii; column < iii + Ty * Ry; column += Ty) {
-          ElTp tmp;
-          if (row < widthB && column < widthA) {
-            tmp = B[row + column];
-          }
-          else {
-            tmp = 0;
-          }
-          Bloc[row][column] = tmp;
+      for (int row = kk + threadIdx.x * Tx; row < kk + threadIdx.x * (Tx + 1); row++) {
+        int column = iii + Tx * Rx * threadIdx.y;
+        ElTp tmp;  
+        if (row < widthB && column < widthA) {
+          tmp = A[row + column];
         }
+        else {
+          tmp = 0;
+        }
+        Aloc[column-iii][row-kk] = tmp;
       }
-      
       __syncthreads();
 
       // compute the per-thread result css:
@@ -170,9 +167,9 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
                  * This assumes of course that you have 
                  *   already solved Task 3.1.
                  ***************************************/
-                css[i][j] +=  
-                  Aloc[iii + threadIdx.y * Ry + i][kk + k] *
-                  Bloc[kk + k][jjj + threadIdx.x * Rx + j] ;
+                css[i][j] += 0;
+                  // Aloc[threadIdx.y * Ry + i][k] *
+                  // Bloc[k][threadIdx.x * Rx + j] ;
 
                 // if( (iii + threadIdx.y*Ry + i < heightA) &&
                 //     (kk+k < widthA) &&
