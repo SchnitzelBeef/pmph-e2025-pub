@@ -87,7 +87,7 @@ void bmmmTiledKer ( ElTp* A,      ElTp* B, char* X_tr,   ElTp* Y
 
   #pragma unroll
   for(int t=0; t<T; t++)
-    acc[t] = 0;
+    acc[t] = 0.0;
 
   /***********************************************
    *** Cuda Exercise 4: ***
@@ -104,7 +104,11 @@ void bmmmTiledKer ( ElTp* A,      ElTp* B, char* X_tr,   ElTp* Y
     int  i = ii + flat_thid;
     char x = (flat_thid < T && i < M) ? X_tr[q * M + i] : 0;
     Xsh_tr[flat_thid] = x;
-    
+  }  
+  
+  __syncthreads();
+
+  for (int q = 0; q < N; q++) {
     #pragma unroll
     for (int i_r = 0; i_r < T; i_r++) {
       ElTp v = (Xsh_tr[i_r] != 0) ? 1 : 0;
@@ -115,6 +119,5 @@ void bmmmTiledKer ( ElTp* A,      ElTp* B, char* X_tr,   ElTp* Y
   for (int i_r = 0; i_r < T; i_r++) {
     if (ii + i_r < M) Y[(ii + i_r) * (K*K) + (j1*K) + j2] = acc[i_r]; 
   }
-
 }
 #endif
