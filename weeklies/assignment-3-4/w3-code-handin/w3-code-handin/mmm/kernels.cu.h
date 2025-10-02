@@ -101,7 +101,7 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
       for (int row = iii + threadIdx.y * Ry; row < iii + threadIdx.y * (Ry + 1); row++) {
         int column = kk + threadIdx.x;
         ElTp tmp;  
-        if (threadIdx.x < widthA && threadIdx.y < heightA) {
+        if (threadIdx.y < widthA && threadIdx.x < heightA) {
           tmp = A[row + column];
         }
         else {
@@ -141,7 +141,7 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
       for (int column = kk + threadIdx.x * Rx; column < kk + threadIdx.x * (Rx + 1); column++) {
         int row = iii + threadIdx.y;
         ElTp tmp;  
-        if (threadIdx.x < widthB && threadIdx.y < widthA) {
+        if (threadIdx.y < widthB && threadIdx.x < widthA) {
           tmp = A[row + column];
         }
         else {
