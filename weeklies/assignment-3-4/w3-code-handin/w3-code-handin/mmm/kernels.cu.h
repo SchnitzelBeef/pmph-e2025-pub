@@ -98,16 +98,18 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
        **************************************************************/
       
       // Please implement Task 3.1.1 here
-      for (int row = iii + Ry * threadIdx.y; row < iii + (Ry + 1) * threadIdx.y; row++) {
-        int column = kk + threadIdx.x;
+      for (int row_index = Ry * threadIdx.y; row_index < Ry * ( threadIdx.y + 1); row_index++) {
+        int row = row_index + iii;
+        int column_index = threadIdx.x;
+        int column = column_index + kk;
         ElTp tmp;  
-        if (column <= widthA * Rx && row <= heightA * Ry) {
+        if (column_index < widthA && row_indx < heightA) {
           tmp = A[row + column];
         }
         else {
           tmp = 0;
         }
-        Aloc[row-iii][column-kk] = tmp;
+        Aloc[row_index][column_index] = tmp;
       }
 
       /***************************************
@@ -138,17 +140,20 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
        **************************************************************/
 
       // Please implement Task 3.1.2 here
-      for (int column = jjj + threadIdx.x * Rx; column < jjj + threadIdx.x * (Rx + 1); column++) {
-        int row = kk + threadIdx.y;
+      for (int column_index = threadIdx.x * Rx; column_index < Rx * ( threadIdx.x + 1); column_index++) {
+        int column = column_index + jjj;
+        int row_index = threadIdx.y;
+        int row = row_index + kk;
         ElTp tmp;  
-        if (column <= widthB * Rx && row <= widthA * Ry) {
+        if (column_index < widthA && row_index < widthB) {
           tmp = B[row + column];
         }
         else {
           tmp = 0;
         }
-        Bloc[row-kk][column-jjj] = tmp;
+        Bloc[row_index][column_index] = tmp;
       }
+      
       __syncthreads();
 
       // compute the per-thread result css:
@@ -167,9 +172,6 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
                  * This assumes of course that you have 
                  *   already solved Task 3.1.
                  ***************************************/
-                
-                // __shared__ ElTp Aloc[Ty*Ry][Tk];
-                // __shared__ ElTp Bloc[Tk][Tx*Rx]; 
                 
                  css[i][j] +=
                   Aloc[i + Ry * threadIdx.y][k] *
