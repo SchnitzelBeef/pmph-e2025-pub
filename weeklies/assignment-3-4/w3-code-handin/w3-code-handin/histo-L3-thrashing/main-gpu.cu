@@ -21,7 +21,7 @@ void multiStepHisto ( uint32_t* d_inp_inds
     const uint32_t CHUNK = ( LLC_FRAC * LLC ) / sizeof(float);
     uint32_t num_partitions = (H + CHUNK - 1) / CHUNK;
 
-    // printf( "Number of partitions: %f\n", ((float)H)/CHUNK );
+    // printf( "Number of partitions: %d\n", num_partitions);
 
     uint32_t grid = (N + B - 1) / B;
     cudaMemset(d_hist, 0, H * sizeof(float));   
@@ -41,7 +41,7 @@ void multiStepHisto ( uint32_t* d_inp_inds
      * but is essentially equivalent with the naive kernel (hence
      * it has roughly the same performance).
      ****************************************************************/
-    #pragma omp parallel for schedule(static)
+    #pragma omp atomic
     for (uint32_t k = 0; k < num_partitions; k++) {
         uint32_t LB = CHUNK * k;
         uint32_t UB = min((k+1)*CHUNK, H);
