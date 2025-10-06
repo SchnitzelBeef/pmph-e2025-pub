@@ -103,7 +103,7 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
         int column_index = threadIdx.x;
         int column = column_index + kk;
         Aloc[row_index][column_index] =
-          (column_index < widthA && row_index < heightA) ? A[row + column] : 0;
+          (column_index < widthA && row_index < heightA) ? A[row * widthA + column] : 0;
       }
 
       /***************************************
@@ -139,7 +139,7 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
         int row_index = threadIdx.y;
         int row = row_index + kk;
         Bloc[row_index][column_index] =
-          (column_index < widthA && row_index < widthB) ? B[row + column] : 0;
+          (column_index < widthA && row_index < widthB) ? B[row * widthB + column] : 0;
       }
       
       __syncthreads();
@@ -164,14 +164,6 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
                  css[i][j] +=
                   Aloc[i + Ry * threadIdx.y][k] *
                   Bloc[k][j + Rx * threadIdx.x] ;
-
-                // if( (iii + threadIdx.y*Ry + i < heightA) &&
-                //     (kk+k < widthA) &&
-                //     (jjj + threadIdx.x*Rx + j < widthB)
-                //   )
-                // css[i][j] +=  
-                //   A[ (iii + threadIdx.y*Ry + i)*widthA + (kk + k)] *
-                //   B[ (kk+k)*widthB + jjj + threadIdx.x*Rx + j] ;
               }
           }
       }
