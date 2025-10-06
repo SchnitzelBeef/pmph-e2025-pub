@@ -102,14 +102,12 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
         int row = row_index + iii;
         int column_index = threadIdx.x;
         int column = column_index + kk;
-        ElTp tmp;  
-        if (column_index < widthA && row_indx < heightA) {
-          tmp = A[row + column];
+        if (column_index < widthA && row_index < heightA) {
+          Aloc[row_index][column_index] = A[row + column];
         }
         else {
-          tmp = 0;
+          Aloc[row_index][column_index] = 0;
         }
-        Aloc[row_index][column_index] = tmp;
       }
 
       /***************************************
@@ -144,14 +142,12 @@ __global__ void mmmSymBlkRegInnSeqKer(ElTp* A, ElTp* B, ElTp* C, int heightA, in
         int column = column_index + jjj;
         int row_index = threadIdx.y;
         int row = row_index + kk;
-        ElTp tmp;  
         if (column_index < widthA && row_index < widthB) {
-          tmp = B[row + column];
+          Bloc[row_index][column_index] = B[row + column];
         }
         else {
-          tmp = 0;
+          Bloc[row_index][column_index] = 0;
         }
-        Bloc[row_index][column_index] = tmp;
       }
       
       __syncthreads();
